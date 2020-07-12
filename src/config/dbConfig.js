@@ -1,7 +1,11 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 export default {
-    HOST: 'localhost',
-    USER: 'postgres',
-    PASSWORD: 'stevegates1',
+    HOST: process.env.DB_HOST,
+    USER: process.env.DB_USER,
+    PASSWORD: process.env.DB_PASSWORD,
+    PORT: process.env.DB_PORT,
     DB: 'nodejsmentoring',
     dialect: 'postgres',
     pool: {

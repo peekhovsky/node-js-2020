@@ -2,9 +2,9 @@
   "name": "node-js-2020",
   "version": "1.0.0",
   "description": "Created by Rastsislau Piakhouski, 2020",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "task3": "nodemon --exec babel-node server.js"
+    "task3": "nodemon --exec babel-node src/server.js"
   },
   "repository": {
     "type": "git",
@@ -22,6 +22,7 @@
     "bcrypt-promise": "^2.0.0",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "pg": "^8.2.2",
     "pg-hstore": "^2.3.3",
@@ -29,12 +30,12 @@
     "uuid": "^8.2.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.10.4",
     "@babel/core": "^7.10.4",
     "@babel/node": "^7.10.4",
     "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@babel/plugin-syntax-export-default-from": "^7.10.4",
     "@babel/preset-env": "^7.10.4",
-    "babel": "^6.23.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.4.0",
     "nodemon": "^2.0.4"

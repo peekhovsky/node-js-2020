@@ -1,15 +1,18 @@
-import db from '../models';
-import { Op } from 'sequelize';
-import { PASSWORD_SALT_SIZE } from '../config/appConfig';
+import {Op} from 'sequelize';
+import dotenv from 'dotenv';
 import UserSchema from '../models/userSchema';
 import bcrypt from 'bcrypt-promise';
-import { ErrorHandler } from '../error.js';
+import ErrorHandler from '../errors/errorHandler.js';
 
-const User = db.users;
+dotenv.config();
 
 export default class UserService {
-    static async findAutoSuggest(loginSubstring, limit) {
-        return await User.findAll({
+    constructor(userModel) {
+        this.userModel = userModel;
+    }
+
+    async findAutoSuggest(loginSubstring, limit) {
+        return await this.userModel.findAll({
             where: {
                 isDeleted: false,
                 login: {
@@ -23,29 +26,29 @@ export default class UserService {
         });
     }
 
-    static async create(user) {
-        await validateUser(user);
-        await validateLogin(user.login);
-        return await getPasswordHash(user.password)
-            .then(hashPassword => User.create({ ...user, hashPassword }));
+    async create(user) {
+        await this.validateUser(user);
+        await this.validateLogin(user.login);
+        return await this.getPasswordHash(user.password)
+            .then(hashPassword => this.userModel.create({...user, hashPassword}));
     }
 
-    static async updateById({ id, login, password, age }) {
-        await validateLogin(login);
-        const hashPassword = password ? await getPasswordHash(password) : null;
-        return UserService
+    async updateById({id, login, password, age}) {
+        if (login) {
+            await this.validateLogin(login);
+        }
+        const hashPassword = password ? await this.getPasswordHash(password) : null;
+        return this
             .findById(id)
             .then(user => {
-                console.log('user');
-                console.log(user);
-                return validateUser({
-                    login: login || user.dataValues.login,
+                return this.validateUser({
+                    login: login || user.login,
                     password,
                     age: age || user.age
                 });
             })
             .then(user =>
-                updateUser({
+                this.updateUser({
                     id,
                     login: login || user.login,
                     hashPassword: hashPassword || user.hashPassword,
@@ -54,8 +57,8 @@ export default class UserService {
             );
     }
 
-    static async findById(id) {
-        return User
+    async findById(id) {
+        return this.userModel
             .findOne({
                 where: {
                     id
@@ -63,53 +66,65 @@ export default class UserService {
             })
             .then(user => {
                 if (!user) {
-                    throw new ErrorHandler(404, 'User is not found');
+                    throw new ErrorHandler(404, 'User is not found.');
                 }
                 return user.dataValues;
             });
     }
 
-    static async removeById(id) {
-        User
-            .destroy({
+    async removeById(id) {
+        return this.userModel
+            .findOne({
                 where: {
                     id
                 }
             })
-            .then();
-        throw new ErrorHandler(404, 'User is not found');
+            .then(user => {
+                if (user) {
+                    return this.userModel.update({isDeleted: true, ...user}, {
+                        where: {
+                            id: user.id
+                        }
+                    })
+                } else {
+                    throw new ErrorHandler(404, 'User is not found.');
+                }
+            })
     }
-}
 
-
-const updateUser = async (newUser) => {
-    return User.update(newUser, {
-        where: {
-            id: newUser.id
-        }
-    });
-};
-
-const getPasswordHash = async newPassword => bcrypt.hash(newPassword, PASSWORD_SALT_SIZE);
-
-const validateUser = async user => {
-    const { error } = await UserSchema.validate(user);
-    if (error) {
-        throw new ErrorHandler(400, error.details);
-    }
-    return user;
-};
-
-const validateLogin = async login => {
-    return User
-        .findOne({
+    updateUser(newUser) {
+        return this.userModel.update(newUser, {
             where: {
-                login
-            }
-        })
-        .then(user => {
-            if (user) {
-                throw new ErrorHandler(404, 'Login name is already taken.');
+                id: newUser.id
             }
         });
-};
+    };
+
+    validateLogin = async login => {
+        if (!login) {
+            throw new ErrorHandler(404, 'Login name is empty.');
+        }
+        return this.userModel
+            .findOne({
+                where: {
+                    login
+                }
+            })
+            .then(user => {
+                if (user) {
+                    throw new ErrorHandler(404, 'Login name is already taken.');
+                }
+            });
+    };
+
+    validateUser = async user => {
+        const {error} = await UserSchema.validate(user);
+        if (error) {
+            throw new ErrorHandler(400, error.details);
+        }
+        return user;
+    };
+
+    getPasswordHash = async newPassword =>
+        bcrypt.hash(newPassword, parseInt(process.env.PASSWORD_SALT_SIZE) || 10);
+}
