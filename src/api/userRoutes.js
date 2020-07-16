@@ -1,10 +1,10 @@
-import UserService from "../services/userService";
+import UserService from '../services/userService';
 import UserController from './userController';
 import { Router } from 'express';
 import db from '../models';
 
 const router = Router();
-const userService = new UserService(db.users);
+const userService = new UserService(db.users, db.groups);
 const userController = new UserController(userService);
 
 router.get('/', (req, res) => userController.findAutoSuggest(req, res));

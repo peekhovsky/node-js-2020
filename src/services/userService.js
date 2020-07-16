@@ -7,8 +7,9 @@ import ErrorHandler from '../errors/errorHandler.js';
 dotenv.config();
 
 export default class UserService {
-    constructor(userModel) {
+    constructor(userModel, groupModel) {
         this.userModel = userModel;
+        this.groupModel = groupModel;
     }
 
     async findAutoSuggest(loginSubstring, limit) {
@@ -22,6 +23,10 @@ export default class UserService {
             order: [
                 ['login', 'ASC']
             ],
+            include: [{
+                model: this.groupModel,
+                as: 'groups'
+            }],
             limit
         });
     }
