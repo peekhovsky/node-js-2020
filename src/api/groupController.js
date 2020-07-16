@@ -1,47 +1,45 @@
 import ErrorHandler from '../errors/errorHandler';
 
-export default class UserController {
-    constructor(userService) {
-        this.userService = userService;
+export default class GroupController {
+    constructor(groupService) {
+        this.groupService = groupService;
     }
 
-    findAutoSuggest(req, res) {
-        const { query } = req;
-        const { limit, loginSubstring } = query;
-        this.userService
-            .findAutoSuggest(loginSubstring, limit)
+    findAll(req, res) {
+        this.groupService
+            .findAll()
             .then(users => res.send(users))
-            .catch((e) => UserController.handleError(req, res, e));
+            .catch((e) => GroupController.handleError(req, res, e));
     }
 
     create(req, res) {
         const { body } = req;
-        this.userService.create(body)
+        this.groupService.create(body)
             .then(user => res.send(user))
-            .catch(e => UserController.handleError(req, res, e));
+            .catch(e => GroupController.handleError(req, res, e));
     }
 
     findById(req, res) {
         const { params } = req;
         const { id } = params;
-        this.userService.findById(id)
+        this.groupService.findById(id)
             .then(user => res.send(user))
-            .catch(e => UserController.handleError(req, res, e));
+            .catch(e => GroupController.handleError(req, res, e));
     }
 
     updateById(req, res) {
         const { body } = req;
-        this.userService.updateById(body)
+        this.groupService.updateById(body)
             .then(() => res.send())
-            .catch((e) => UserController.handleError(req, res, e));
+            .catch((e) => GroupController.handleError(req, res, e));
     }
 
     removeById(req, res) {
         const { body } = req;
         const { id } = body;
-        this.userService.removeById(id)
+        this.groupService.removeById(id)
             .then(() => res.send())
-            .catch(e => UserController.handleError(req, res, e));
+            .catch(e => GroupController.handleError(req, res, e));
     }
 
     static handleError(req, res, error) {

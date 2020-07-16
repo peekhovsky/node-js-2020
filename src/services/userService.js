@@ -1,4 +1,4 @@
-import {Op} from 'sequelize';
+import { Op } from 'sequelize';
 import dotenv from 'dotenv';
 import UserSchema from '../models/userSchema';
 import bcrypt from 'bcrypt-promise';
@@ -12,7 +12,7 @@ export default class UserService {
     }
 
     async findAutoSuggest(loginSubstring, limit) {
-        return await this.userModel.findAll({
+        return this.userModel.findAll({
             where: {
                 isDeleted: false,
                 login: {
@@ -30,10 +30,10 @@ export default class UserService {
         await this.validateUser(user);
         await this.validateLogin(user.login);
         return await this.getPasswordHash(user.password)
-            .then(hashPassword => this.userModel.create({...user, hashPassword}));
+            .then(hashPassword => this.userModel.create({ ...user, hashPassword }));
     }
 
-    async updateById({id, login, password, age}) {
+    async updateById({ id, login, password, age }) {
         if (login) {
             await this.validateLogin(login);
         }
@@ -81,15 +81,14 @@ export default class UserService {
             })
             .then(user => {
                 if (user) {
-                    return this.userModel.update({isDeleted: true, ...user}, {
+                    return this.userModel.update({ isDeleted: true, ...user }, {
                         where: {
                             id: user.id
                         }
-                    })
-                } else {
-                    throw new ErrorHandler(404, 'User is not found.');
+                    });
                 }
-            })
+                throw new ErrorHandler(404, 'User is not found.');
+            });
     }
 
     updateUser(newUser) {
@@ -98,7 +97,7 @@ export default class UserService {
                 id: newUser.id
             }
         });
-    };
+    }
 
     validateLogin = async login => {
         if (!login) {
@@ -118,7 +117,7 @@ export default class UserService {
     };
 
     validateUser = async user => {
-        const {error} = await UserSchema.validate(user);
+        const { error } = await UserSchema.validate(user);
         if (error) {
             throw new ErrorHandler(400, error.details);
         }

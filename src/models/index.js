@@ -1,6 +1,7 @@
 import Sequelize from 'sequelize';
 import DB_CONFIG  from '../config/dbConfig';
 import UserModel from './userModel';
+import GroupModel from './groupModel';
 
 const sequelize = new Sequelize(DB_CONFIG.DB, DB_CONFIG.USER, DB_CONFIG.PASSWORD, {
     host: DB_CONFIG.HOST,
@@ -21,5 +22,6 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 db.users = UserModel(sequelize, Sequelize);
+db.groups = GroupModel(sequelize, Sequelize);
 
 export default db;
