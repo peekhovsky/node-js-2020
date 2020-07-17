@@ -4,7 +4,7 @@
   "description": "Created by Rastsislau Piakhouski, 2020",
   "main": "src/server.js",
   "scripts": {
-    "task3": "nodemon --exec babel-node src/server.js"
+    "task4": "nodemon --exec babel-node src/server.js"
   },
   "repository": {
     "type": "git",
@@ -27,7 +27,8 @@
     "pg": "^8.2.2",
     "pg-hstore": "^2.3.3",
     "sequelize": "^6.3.0",
-    "uuid": "^8.2.0"
+    "uuid": "^8.2.0",
+    "validator": "^13.1.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.4",

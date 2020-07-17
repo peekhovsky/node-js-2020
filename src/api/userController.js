@@ -32,7 +32,7 @@ export default class UserController {
     updateById(req, res) {
         const { body } = req;
         this.userService.updateById(body)
-            .then(() => res.send())
+            .then((r) => res.send(r))
             .catch((e) => UserController.handleError(req, res, e));
     }
 
@@ -40,7 +40,15 @@ export default class UserController {
         const { body } = req;
         const { id } = body;
         this.userService.removeById(id)
-            .then(() => res.send())
+            .then(r => res.send(r))
+            .catch(e => UserController.handleError(req, res, e));
+    }
+
+    addUserToGroup(req, res) {
+        const { body } = req;
+        const { id, groupId } = body;
+        this.userService.addUserToGroup(id, groupId)
+            .then(r => res.send(r))
             .catch(e => UserController.handleError(req, res, e));
     }
 

@@ -15,6 +15,8 @@ router.post('/', (req, res) => userController.create(req, res));
 
 router.put('/', (req, res) => userController.updateById(req, res));
 
+router.put('/group', (req, res) => userController.addUserToGroup(req, res));
+
 router.delete('/', (req, res) => userController.removeById(req, res));
 
 export default router;

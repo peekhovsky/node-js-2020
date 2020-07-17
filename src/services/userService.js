@@ -1,8 +1,10 @@
-import { Op } from 'sequelize';
+import { Op, DatabaseError } from 'sequelize';
+import db from '../models';
 import dotenv from 'dotenv';
-import UserSchema from '../models/userSchema';
 import bcrypt from 'bcrypt-promise';
 import ErrorHandler from '../errors/errorHandler.js';
+import { validateIds, validateUser } from './util/validationUtil';
+
 
 dotenv.config();
 
@@ -32,21 +34,25 @@ export default class UserService {
     }
 
     async create(user) {
-        await this.validateUser(user);
-        await this.validateLogin(user.login);
+        await validateUser(user);
+        if (!await this.isLoginNameFree(user.login)) {
+            throw new ErrorHandler(401, 'Login name is busy');
+        }
         return await this.getPasswordHash(user.password)
             .then(hashPassword => this.userModel.create({ ...user, hashPassword }));
     }
 
     async updateById({ id, login, password, age }) {
         if (login) {
-            await this.validateLogin(login);
+            if (!await this.isLoginNameFree(login)) {
+                throw new ErrorHandler(401, 'Login name is busy');
+            }
         }
         const hashPassword = password ? await this.getPasswordHash(password) : null;
         return this
             .findById(id)
             .then(user => {
-                return this.validateUser({
+                return validateUser({
                     login: login || user.login,
                     password,
                     age: age || user.age
@@ -96,6 +102,19 @@ export default class UserService {
             });
     }
 
+
+    async addUserToGroup(id, groupId) {
+        await validateIds([id, groupId]);
+        return await db.sequelize.transaction(transaction => {
+            return this.userModel
+                .findOne({ where: { id } }, { transaction })
+                .then(user => this.groupModel
+                    .findOne({ where: { id: groupId } }, { transaction })
+                    .then((group) => user.addGroup(group, { transaction }))
+                );
+        });
+    }
+
     updateUser(newUser) {
         return this.userModel.update(newUser, {
             where: {
@@ -104,7 +123,7 @@ export default class UserService {
         });
     }
 
-    validateLogin = async login => {
+    isLoginNameFree = async login => {
         if (!login) {
             throw new ErrorHandler(404, 'Login name is empty.');
         }
@@ -114,19 +133,7 @@ export default class UserService {
                     login
                 }
             })
-            .then(user => {
-                if (user) {
-                    throw new ErrorHandler(404, 'Login name is already taken.');
-                }
-            });
-    };
-
-    validateUser = async user => {
-        const { error } = await UserSchema.validate(user);
-        if (error) {
-            throw new ErrorHandler(400, error.details);
-        }
-        return user;
+            .then(user => !user);
     };
 
     getPasswordHash = async newPassword =>

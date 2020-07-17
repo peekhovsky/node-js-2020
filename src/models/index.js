@@ -32,6 +32,7 @@ userModel.belongsToMany(groupModel, {
 });
 
 groupModel.belongsToMany(userModel, {
+    onDelete: 'cascade',
     through: 'user_group',
     as: 'users',
     foreignKey: 'groupId',
